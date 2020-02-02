@@ -11,7 +11,7 @@ services:
     depends_on:
       - zookeeper
     environment:
-      - ADVERTISED_HOST_NAME=${DOCKER_HOST_IP?DOCKER_HOST_IP must be set}
+      - ADVERTISED_HOST_NAME=kafka
       - KAFKA_HEAP_OPTS=-Xmx192m -Xms192m
       - ZOOKEEPER_SERVERS=zookeeper:2181
   mysql:
@@ -77,6 +77,7 @@ services:
     build: ./ftgo-consumer-service
     ports:
       - "8081:8080"
+      - "7006:8000"
     depends_on:
       - mysql
       - kafka
@@ -89,11 +90,12 @@ services:
       EVENTUATELOCAL_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       EVENTUATELOCAL_ZOOKEEPER_CONNECTION_STRING: zookeeper:2181
       EVENTUATE_DATABASE_SCHEMA: ftgo_consumer_service
-      JAVA_OPTS: -Xmx192m
+      JAVA_OPTS: -Xmx192m -agentlib:jdwp=transport=dt_socket,address=8000,server=y,suspend=n
   ftgo-order-service:
     build: ./ftgo-order-service
     ports:
       - "8082:8080"
+      - "7000:8000"
     depends_on:
       - mysql
       - kafka
@@ -115,6 +117,7 @@ services:
       build: ./ftgo-kitchen-service
       ports:
         - "8083:8080"
+        - "7001:8000"
       depends_on:
         - mysql
         - kafka
@@ -127,12 +130,13 @@ services:
         SPRING_DATASOURCE_DRIVER_CLASS_NAME: com.mysql.jdbc.Driver
         EVENTUATELOCAL_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
         EVENTUATELOCAL_ZOOKEEPER_CONNECTION_STRING: zookeeper:2181
-        JAVA_OPTS: -Xmx192m
+        JAVA_OPTS: -Xmx192m -agentlib:jdwp=transport=dt_socket,address=8000,server=y,suspend=n
         EVENTUATE_DATABASE_SCHEMA: ftgo_kitchen_service
   ftgo-restaurant-service:
       build: ./ftgo-restaurant-service
       ports:
         - "8084:8080"
+        - "7002:8000"
       depends_on:
         - mysql
         - kafka
@@ -145,12 +149,13 @@ services:
         SPRING_DATASOURCE_DRIVER_CLASS_NAME: com.mysql.jdbc.Driver
         EVENTUATELOCAL_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
         EVENTUATELOCAL_ZOOKEEPER_CONNECTION_STRING: zookeeper:2181
-        JAVA_OPTS: -Xmx192m
+        JAVA_OPTS: -Xmx192m -agentlib:jdwp=transport=dt_socket,address=8000,server=y,suspend=n
         EVENTUATE_DATABASE_SCHEMA: ftgo_restaurant_service
   ftgo-accounting-service:
         build: ./ftgo-accounting-service
         ports:
           - "8085:8080"
+          - "7003:8000"
         depends_on:
           - mysql
           - kafka
@@ -163,12 +168,13 @@ services:
           SPRING_DATASOURCE_DRIVER_CLASS_NAME: com.mysql.jdbc.Driver
           EVENTUATELOCAL_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
           EVENTUATELOCAL_ZOOKEEPER_CONNECTION_STRING: zookeeper:2181
-          JAVA_OPTS: -Xmx192m
+          JAVA_OPTS: -Xmx192m -agentlib:jdwp=transport=dt_socket,address=8000,server=y,suspend=n
           EVENTUATE_DATABASE_SCHEMA: ftgo_accounting_service
   ftgo-order-history-service:
         build: ./ftgo-order-history-service
         ports:
           - "8086:8080"
+          - "7004:8000"
         depends_on:
           - kafka
           - zookeeper
@@ -182,16 +188,17 @@ services:
           AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-access_key}
           AWS_DYNAMODB_ENDPOINT_URL: http://dynamodblocal:8000
           AWS_REGION: ${AWS_REGION:-us-west-2}
-          JAVA_OPTS: -Xmx192m
+          JAVA_OPTS: -Xmx192m -agentlib:jdwp=transport=dt_socket,address=8000,server=y,suspend=n
   ftgo-api-gateway:
     build: ./ftgo-api-gateway
     ports:
       - "8087:8080"
+      - "7005:8000"
     environment:
       ORDER_DESTINATIONS_ORDERSERVICEURL: http://ftgo-order-service:8080
       ORDER_DESTINATIONS_ORDERHISTORYSERVICEURL: http://ftgo-order-history-service:8080
       CONSUMER_DESTINATIONS_CONSUMERSERVICEURL: http://ftgo-consumer-service:8080
-      JAVA_OPTS: -Xmx192m
+      JAVA_OPTS: -Xmx192m -agentlib:jdwp=transport=dt_socket,address=8000,server=y,suspend=n
       SPRING_SLEUTH_ENABLED: "true"
       SPRING_SLEUTH_SAMPLER_PROBABILITY: 1
       SPRING_ZIPKIN_BASE_URL: http://zipkin:9411/
